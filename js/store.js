@@ -27,57 +27,67 @@ export const store = {
     },
   ],
   detailList: {},
-};
+}
 
 export function updateStorage() {
-  sessionStorage.setItem("store", JSON.stringify(store));
+  sessionStorage.setItem('store', JSON.stringify(store))
 }
 
 export function initStore() {
-  const storage = sessionStorage.getItem("store");
-  if (!storage) updateStorage();
+  const storage = sessionStorage.getItem('store')
+  if (!storage) updateStorage()
 
   const { dateList, detailList, todayId, currentFunds, isFirstEdit } =
-    JSON.parse(storage);
+    JSON.parse(storage)
 
-  store.currentFunds = currentFunds;
-  store.isFirstEdit = isFirstEdit;
-  store.dateList = dateList;
-  store.detailList = detailList;
-  store.todayId = todayId;
+  store.currentFunds = currentFunds
+  store.isFirstEdit = isFirstEdit
+  store.dateList = dateList
+  store.detailList = detailList
+  store.todayId = todayId
 }
 
 export function addNewHistory(newHistory) {
   try {
-    // TODO:
-    /**
-     * - store의 detailList 새로 갱신
-     * - store.currentFunds 새로 갱신
-     */
-    store.detailList = null;
-    store.currentFunds = null;
+    if (!store.detailList[store.todayId]) {
+      store.detailList[store.todayId] = []
+    }
+    store.detailList[store.todayId].push(newHistory)
 
-    updateStorage();
-    return true;
+    store.currentFunds -= newHistory.amount
+
+    updateStorage()
+    return true
   } catch (error) {
-    alert(error);
-    return false;
+    alert(error)
+    return false
   }
 }
 
 export function removeHistory(dateId, itemId) {
   try {
-    // TODO:
-    /**
-     * - store의 detailList 새로 갱신
-     * - store.currentFunds 새로 갱신
-     */
-    store.detailList[dateId] = null;
+    if (!store.detailList[dateId]) return false
 
-    updateStorage();
-    return true;
+    // Find the item first to get its amount
+    const itemToRemove = store.detailList[dateId].find(
+      (item) => item.id === Number(itemId),
+    )
+    if (!itemToRemove) return false
+
+    store.currentFunds += itemToRemove.amount
+
+    store.detailList[dateId] = store.detailList[dateId].filter(
+      (item) => item.id !== Number(itemId),
+    )
+
+    if (store.detailList[dateId].length === 0) {
+      delete store.detailList[dateId]
+    }
+
+    updateStorage()
+    return true
   } catch (error) {
-    alert(error);
-    return false;
+    alert(error)
+    return false
   }
 }
